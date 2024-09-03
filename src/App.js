@@ -57,7 +57,7 @@ function AppContent() {
           />
         </Routes>
       </Content>
-      <Footer style={{ textAlign: 'center' }}>KYC Tool ©2023 Created by Your Company</Footer>
+      <Footer style={{ textAlign: 'center' }}>KYC Tool ©{new Date().getFullYear()} Created by BrD Compagnie</Footer>
     </Layout>
   );
 }
