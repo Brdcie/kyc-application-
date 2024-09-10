@@ -24,4 +24,5 @@ yarn-error.log*
 .vscode
 .idea
 *.swp
-*.swo
+*.swo.env
+Data/entities.ftm.json
