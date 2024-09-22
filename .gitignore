@@ -10,6 +10,7 @@
 /build
 
 # Misc
+.env
 .DS_Store
 .env.local
 .env.development.local
@@ -24,4 +25,5 @@ yarn-error.log*
 .vscode
 .idea
 *.swp
-*.swo
+*.swo.env
+Data/entities.ftm.json
