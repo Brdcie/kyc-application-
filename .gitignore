@@ -16,6 +16,14 @@
 .env.development.local
 .env.test.local
 .env.production.local
+# Node modules
+backend/node_modules/
+frontend/node_modules/
+
+# Fichiers environnement
+backend/.env
+frontend/.env
+
 
 npm-debug.log*
 yarn-debug.log*
@@ -26,4 +34,7 @@ yarn-error.log*
 .idea
 *.swp
 *.swo.env
-Data/entities.ftm.json
+# Exclure le répertoire data dans backend
+backend/data/
+# Test output
+test_output.json

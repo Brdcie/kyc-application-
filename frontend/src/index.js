@@ -1,9 +1,9 @@
+// frontend/src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import 'antd/dist/reset.css'; // Importer les styles d'Ant Design
 import './index.css';
 import App from './App';
-//import 'antd/dist/antd.css';
-import 'antd/dist/reset.css';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
