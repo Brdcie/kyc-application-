@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import { searchLocalEntities } from '../services/api';
-import { Input, Button, Form, Spin, Alert, Card, List, Table } from 'antd';
+import { Input, Button, Form, Spin, Alert, Card, List, Table, Typography } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom'; // Assurez-vous que ceci est bien importé
 
 const { Item } = Form;
+const { Text } = Typography;
 
 const EntitySearch = () => {
   const [query, setQuery] = useState('');
@@ -25,6 +26,7 @@ const EntitySearch = () => {
 
     try {
       const response = await searchLocalEntities(query);
+      console.log('Données reçues de l\'API :', response.data); // Ajout du log
       setResults(response.data.results);
     } catch (err) {
       console.error('Erreur lors de la recherche des entités :', err);
@@ -72,10 +74,15 @@ const EntitySearch = () => {
             <List.Item key={entity.id}>
               <List.Item.Meta
                 title={<Link to={`/entities/${entity.id}`}>{entity.caption}</Link>}
-                description={`ID : ${entity.id}`}
+                description={
+                  <>
+                    <div><Text strong>ID :</Text> {entity.id}</div>
+                    <div><Text strong>Type d’entité :</Text> {entity.schema || 'N/A'}</div>
+                  </>
+                }
               />
               <Table
-                dataSource={Object.entries(entity.properties || {})}
+                dataSource={Object.entries(entity.properties || {}).map(([key, value]) => ({ key, value }))}
                 columns={[
                   {
                     title: 'Propriété',
