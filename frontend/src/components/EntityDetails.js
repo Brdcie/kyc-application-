@@ -24,10 +24,10 @@ const EntityDetails = () => {
 
     try {
       const response = await getLocalEntity(entityId);
-      console.log('Données reçues de l\'API :', response.data); // Ajout du log
+     // console.log('Données reçues de l\'API :', response.data); // Ajout du log
       setEntity(response.data);
     } catch (err) {
-      console.error('Erreur lors de l\'appel API :', err); // Ajout du log
+      //console.error('Erreur lors de l\'appel API :', err); // Ajout du log
       if (err.response && err.response.status === 404) {
         setError('Entité non trouvée.');
       } else {
@@ -64,7 +64,7 @@ const EntityDetails = () => {
         <Card title="Détails de l'Entité" style={{ marginTop: 20 }}>
           <p><strong>ID :</strong> {entity.id}</p>
           <p><strong>Caption :</strong> {entity.caption}</p>
-          <p><strong>Schéma :</strong> {entity.schema}</p>
+          <p><strong>Type d'entité :</strong> {entity.schema}</p>
           <h4>Propriétés :</h4>
           <List
             itemLayout="horizontal"

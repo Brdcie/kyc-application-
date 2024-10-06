@@ -1,5 +1,4 @@
 // controllers/entityController.js
-// Supposons que le fichier est situé dans backend/data/entities.json
 const fs = require('fs');
 const path = require('path');
 const readline = require ('readline');
@@ -63,8 +62,8 @@ exports.getLocalEntity = (req, res) => {
   const entityId = req.params.id;
   const filePath = path.join(__dirname, '..', 'data', 'entities.ftm.json'); // Assurez-vous que le nom du fichier est correct
   //const filePath = '/Users/brigitte/kyc-tool/backend/data/entities.ftm.json'; // Chemin absolu pour le test
-  console.log('Répertoire actuel (__dirname) :', __dirname);
-  console.log('Chemin complet du fichier (filePath) :', filePath);
+  //console.log('Répertoire actuel (__dirname) :', __dirname);
+  //console.log('Chemin complet du fichier (filePath) :', filePath);
   let entityFound = null;
 
   const readStream = fs.createReadStream(filePath, { encoding: 'utf8' });
@@ -108,7 +107,6 @@ exports.searchLocalEntities = (req, res) => {
   }
 
   const filePath = path.join(__dirname, '..', 'data', 'entities.ftm.json');
-  //const filePath = '/Users/brigitte/kyc-tool/backend/data/entities.ftm.json'; // Chemin absolu pour le test
   const readStream = fs.createReadStream(filePath, { encoding: 'utf8' });
   const rl = readline.createInterface({
     input: readStream,

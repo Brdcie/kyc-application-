@@ -1,5 +1,5 @@
  ```markdown
-# Application KYC
+# Application KYC statr
 
 ![GitHub license](https://img.shields.io/github/license/Brdcie/kyc-application-.svg)
 ![GitHub last commit](https://img.shields.io/github/last-commit/Brdcie/kyc-application-.svg)
@@ -149,6 +149,8 @@ Le projet est structuré en deux dossiers principaux : `frontend` et `backend`
 2. Entrez un nom ou un critère de recherche dans le champ de saisie.
 3. Cliquez sur le bouton "Rechercher".
 4. Les résultats s'affichent avec les propriétés et le type d’entité.
+5. On peut sauvegarder les résultats de la recherche dans un pdf.
+6. En cliquant sur le caption, on arrive sur l'onglet recherche par Id et de là, on peut visualiser tout le détail et l'imprimer dans un pdf.
 
 ### Détails d'une Entité
 

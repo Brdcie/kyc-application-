@@ -8,6 +8,8 @@
     "@testing-library/user-event": "^13.5.0",
     "antd": "^5.20.6",
     "axios": "^1.7.7",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
@@ -15,14 +17,14 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-  "start": "react-scripts start",
-  "start:legacy": "export NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-  "build": "react-scripts build",
-  "test": "react-scripts test",
-  "eject": "react-scripts eject",
-  "lint": "eslint 'src/**/*.{js,jsx}'",
-  "format": "prettier --write 'src/**/*.{js,jsx}'"
-},
+    "start": "react-scripts start",
+    "start:legacy": "export NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint 'src/**/*.{js,jsx}'",
+    "format": "prettier --write 'src/**/*.{js,jsx}'"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
