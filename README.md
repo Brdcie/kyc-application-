@@ -156,6 +156,9 @@ Le projet est structuré en deux dossiers principaux : `frontend` et `backend`
 
 1. Cliquez sur le lien d'une entité dans les résultats de recherche.
 2. Vous serez redirigé vers la page de détails de l'entité, affichant toutes les informations pertinentes.
+3.En cliquant sur le caption, on arrive sur l'onglet recherche par Id et de là, on peut visualiser tout le détail et l'imprimer dans un pdf.
+
+
 
 ## Documentation de l'API
 
