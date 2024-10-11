@@ -1,9 +1,9 @@
-// frontend/src/components/EntityDetails.js
-
 import React, { useState } from 'react';
 import { getLocalEntity } from '../services/api';
 import { Input, Button, Form, Spin, Alert, Card, List } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, FilePdfOutlined } from '@ant-design/icons';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const { Item } = Form;
 
@@ -24,10 +24,8 @@ const EntityDetails = () => {
 
     try {
       const response = await getLocalEntity(entityId);
-     // console.log('Données reçues de l\'API :', response.data); // Ajout du log
       setEntity(response.data);
     } catch (err) {
-      //console.error('Erreur lors de l\'appel API :', err); // Ajout du log
       if (err.response && err.response.status === 404) {
         setError('Entité non trouvée.');
       } else {
@@ -36,6 +34,42 @@ const EntityDetails = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const generatePDF = () => {
+    if (!entity) return;
+
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text(`Détails de l'Entité: ${entity.caption}`, 14, 22);
+    
+    doc.setFontSize(11);
+    doc.text(`Date de génération : ${new Date().toLocaleString()}`, 14, 30);
+    
+    doc.setFontSize(12);
+    doc.text(`ID: ${entity.id || 'N/A'}`, 14, 40);
+    doc.text(`Caption: ${entity.caption || 'N/A'}`, 14, 48);
+    doc.text(`Schéma: ${entity.schema || 'N/A'}`, 14, 56);
+    doc.text(`Referents: ${entity.referents?.join(', ') || 'N/A'}`, 14, 64);
+    doc.text(`Datasets: ${entity.datasets?.join(', ') || 'N/A'}`, 14, 72);
+
+    // Table des propriétés
+    const tableColumn = ["Propriété", "Valeur"];
+    const tableRows = Object.entries(entity.properties || {}).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? value.join(', ') : value
+    ]);
+
+    doc.autoTable({
+      startY: 80,
+      head: [tableColumn],
+      body: tableRows,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] },
+    });
+
+    doc.save(`entite_${entity.id}.pdf`);
   };
 
   return (
@@ -57,7 +91,6 @@ const EntityDetails = () => {
       </Form>
 
       {loading && <Spin tip="Chargement..." style={{ marginTop: 20 }} />}
-
       {error && <Alert message={error} type="error" showIcon style={{ marginTop: 20 }} />}
 
       {entity && (
@@ -73,11 +106,19 @@ const EntityDetails = () => {
               <List.Item>
                 <List.Item.Meta
                   title={<strong>{key} :</strong>}
-                  description={values ? values.join(', ') : 'N/A'}
+                  description={values ? (Array.isArray(values) ? values.join(', ') : values) : 'N/A'}
                 />
               </List.Item>
             )}
           />
+          <Button
+            type="primary"
+            icon={<FilePdfOutlined />}
+            onClick={generatePDF}
+            style={{ marginTop: 20 }}
+          >
+            Générer PDF
+          </Button>
         </Card>
       )}
     </Card>

@@ -1,12 +1,12 @@
 .custom-table .ant-table-thead > tr > th,
 .custom-table .ant-table-tbody > tr > td {
-  border: 2px solid darkblue !important; /* Bordures darkblue pour les cellules */
-  padding: 8px;
+  border: 8px #215dd6  !important; /* Bordures darkblue pour les cellules */
+  padding: 2px;
 }
 
 .custom-table .ant-table-thead > tr > th {
   background-color: #f0f8ff; /* Couleur de fond légère pour les en-têtes */
-  color: darkblue; /* Texte des en-têtes en darkblue */
+  color: #215dd6 ; /* Texte des en-têtes en darkblue */
 }
 
 .custom-table .ant-table-tbody > tr > td {
