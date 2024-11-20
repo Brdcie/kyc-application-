@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { APP_VERSION, APP_NAME } from './config';
-import { Layout, Menu, Typography } from 'antd';
-import { ConfigProvider } from 'antd';
-import { SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import EntityDetails from './components/EntityDetails';
+import { Layout, Menu, Typography, ConfigProvider } from 'antd';
+import { SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import EntitySearch from './components/EntitySearch';
-import EntityPage from './components/EntityPage';
+import EntityDetails from './components/EntityDetails';
+//import EntityPage from './components/EntityPage';
+import { APP_VERSION, APP_NAME } from './config';
 
 const { Header, Content, Footer } = Layout;
-const { Title, Text} = Typography;
+const { Title, Text } = Typography;
 
 const App = () => {
   const location = useLocation();
@@ -36,7 +35,7 @@ const App = () => {
           Menu: {
             horizontalItemSelectedColor: '#fff',
             horizontalItemHoverColor: '#fff',
-            horizontalItemSelectedBg: '#1a4bab', // Couleur de fond pour l'onglet sélectionné
+            horizontalItemSelectedBg: '#1a4bab',
           },
         },
       }}
@@ -46,7 +45,7 @@ const App = () => {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ color: '#fff', marginLeft: '20px', marginRight: '20px' }}>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-               KYC as a service
+                Know Your Business Partners
               </Title>
             </div>
             <Menu 
@@ -56,10 +55,10 @@ const App = () => {
               style={{ flex: 1, background: 'none' }}
             >
               <Menu.Item key="search" icon={<SearchOutlined />} style={menuItemStyle}>
-                <Link to="/">Recherche par Critères</Link>
+                <Link to="/">Recherche par Nom</Link>
               </Menu.Item>
               <Menu.Item key="details" icon={<InfoCircleOutlined />} style={menuItemStyle}>
-                <Link to="/details">Recherche par ID</Link>
+                <Link to="/details">Recherche par Identifiant</Link>
               </Menu.Item>
             </Menu>
           </div>
@@ -75,12 +74,12 @@ const App = () => {
               />
             } />
             <Route path="/details" element={<EntityDetails />} />
-            <Route path="/entity/:id" element={<EntityPage />} />
+            <Route path="/details/:id" element={<EntityDetails />} />
           </Routes>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
-           <div>{APP_NAME} ©2024 by EvoLogica</div>
-           <Text type="secondary">Version {APP_VERSION}</Text>
+          <div>{APP_NAME} ©2024 by EvoLogica</div>
+          <Text type="secondary">Version {APP_VERSION}</Text>
         </Footer>
       </Layout>
     </ConfigProvider>

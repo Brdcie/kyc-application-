@@ -1,79 +1,166 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { List, Input, Button, Form, Spin, Alert, Card } from 'antd';
 import { SearchOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { getLocalEntitiesByCaption } from '../services/api';
+import { translate } from '../utils/translations';
+import { getCountryLabel } from '../utils/countryMappings';
+import { getDataSourcesLabel } from '../utils/dataSourcesMappings';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import debounce from 'lodash/debounce';
 
-const EntitySearch = ({ setSearchResults, searchResults, searchCaption, setSearchCaption }) => {
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState('');
+const EntitySearch = () => {
+  const [state, setState] = useState({
+    searchCaption: '',
+    searchResults: [],
+    loading: false,
+    error: ''
+  });
+
+  const { searchCaption, searchResults, loading, error } = state;
 
   const handleSearch = async () => {
-    setLoading(true);
-    setError('');
+    if (!searchCaption.trim()) {
+      setState(prevState => ({
+        ...prevState,
+        error: translate('Please enter a search term')
+      }));
+      return;
+    }
+
+    setState(prevState => ({
+      ...prevState,
+      loading: true,
+      error: ''
+    }));
+
     try {
       const response = await getLocalEntitiesByCaption(searchCaption);
-      setSearchResults(response.data.results);
+      if (response?.data?.results && Array.isArray(response.data.results)) {
+        setState(prevState => ({
+          ...prevState,
+          searchResults: response.data.results,
+          loading: false
+        }));
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (err) {
-      setError('Erreur lors de la recherche des entités.');
-    } finally {
-      setLoading(false);
+      setState(prevState => ({
+        ...prevState,
+        error: err.message === 'Invalid response format' 
+          ? translate('Invalid response format')
+          : translate('Error searching entities'),
+        searchResults: [],
+        loading: false
+      }));
     }
   };
 
+  const debouncedHandleInputChange = debounce((value) => {
+    setState(prevState => ({ ...prevState, searchCaption: value }));
+  }, 500);
+
   const generatePDF = () => {
-    const doc = new jsPDF();
-    
-    doc.setFontSize(18);
-    doc.text('Résultats de la Recherche par Critères', 14, 22);
-    
-    doc.setFontSize(11);
-    doc.text(`Date de génération : ${new Date().toLocaleString()}`, 14, 30);
-    
-    const tableColumn = ["ID", "Caption", "Schéma", "Referents", "Datasets"];
-    const tableRows = [];
-    
-    searchResults.forEach(entity => {
-      const entityData = [
+    if (!searchResults.length) return;
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    addHeader(doc);
+    addTable(doc);
+
+    const sanitizedCaption = searchCaption.trim().replace(/[^a-zA-Z0-9]/g, '_') || 'resultats';
+    const filename = `recherche_kyc_${sanitizedCaption}.pdf`;
+
+    doc.save(filename);
+  };
+
+  const addHeader = (doc) => {
+    doc.setFontSize(10);
+    doc.setTextColor(40);
+    doc.text(`${translate('Search Criteria')}: ${searchCaption}`, 14, 10);
+    doc.text(`${translate('Page')} ${doc.internal.getNumberOfPages()}`, doc.internal.pageSize.width - 20, 10);
+  };
+
+  const addTable = (doc) => {
+    const tableColumn = [
+      translate('id'),
+      translate('caption'),
+      translate('schema'),
+      translate('referents'),
+      translate('datasets'),
+      translate('country')
+    ];
+
+    const tableRows = searchResults.map(entity => {
+      const country = entity.properties?.country || entity.country;
+      const datasets = entity.datasets?.map(dataset => getDataSourcesLabel(dataset)).join(', ') || 'N/A'; // Map dataset codes to labelsconst datasets = entity.datasets?.map(dataset || entity.dataSource;
+      return [
         entity.id || 'N/A',
         entity.caption || 'N/A',
-        entity.schema || 'N/A',
-        entity.referents ? entity.referents.join(', ') : 'N/A',
-        entity.datasets ? entity.datasets.join(', ') : 'N/A'
+        translate(entity.schema) || 'N/A',
+        entity.referents?.join(', ') || 'N/A',
+        datasets, // Use mapped datasets
+        getCountryLabel(country) || 'N/A'
       ];
-      tableRows.push(entityData);
     });
-    
+
     doc.autoTable({
       startY: 35,
       head: [tableColumn],
       body: tableRows,
       styles: { fontSize: 10 },
       headStyles: { fillColor: [22, 160, 133] },
+      didDrawPage: function(data) {
+        addHeader(doc);
+      }
     });
-    
-    const sanitizedCaption = searchCaption.replace(/[^a-zA-Z0-9]/g, '_') || 'resultats';
-    const filename = `recherche_kyc_${sanitizedCaption}.pdf`;
-    
-    doc.save(filename);
+  };
+
+  const EntityListItem = ({ entity }) => {
+    const country = entity.properties?.country || entity.country;
+    const datasets = entity.datasets?.map(dataset => getDataSourcesLabel(dataset)).join(', ') || 'N/A'; // Map dataset codes to labels
+    return (
+      <List.Item>
+        <List.Item.Meta
+          title={<Link to={`/details/${entity.id}`}>{entity.caption}</Link>}
+          description={
+            <>
+              <p><strong>{translate('schema')} :</strong> {translate(entity.schema) || 'N/A'}</p>
+              <p><strong>{translate('referents')} :</strong> {entity.referents?.join(', ') || 'N/A'}</p>
+              <p><strong>{translate('datasets')} :</strong> {datasets}</p>
+              <p><strong>{translate('country')} :</strong> {getCountryLabel(country) || 'N/A'}</p>
+            </>
+          }
+        />
+      </List.Item>
+    );
   };
 
   return (
-    <Card title="Recherche d'Entités par Critères">
+    <Card title={translate('Entity Search by Criteria')}>
       <Form layout="inline" onFinish={handleSearch}>
         <Form.Item>
           <Input
             value={searchCaption}
-            onChange={(e) => setSearchCaption(e.target.value)}
-            placeholder="Entrer le caption de l'entité"
+            onChange={(e) => debouncedHandleInputChange(e.target.value)}
+            placeholder={translate('Enter entity caption')}
             required
           />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-            Rechercher
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            icon={<SearchOutlined />}
+            disabled={loading}
+          >
+            {translate('Search')}
           </Button>
         </Form.Item>
         <Form.Item>
@@ -83,32 +170,29 @@ const EntitySearch = ({ setSearchResults, searchResults, searchCaption, setSearc
             onClick={generatePDF}
             disabled={searchResults.length === 0}
           >
-            Générer PDF
+            {translate('Generate PDF')}
           </Button>
         </Form.Item>
       </Form>
 
-      {loading && <Spin tip="Chargement..." style={{ marginTop: 20 }} />}
-      {error && <Alert message={error} type="error" showIcon style={{ marginTop: 20 }} />}
+      {loading && <Spin tip={translate('Loading...')} style={{ marginTop: 20 }} />}
+      {error && (
+        <Alert 
+          message={error} 
+          type="error" 
+          showIcon 
+          style={{ marginTop: 20 }} 
+        />
+      )}
 
-      <List
-        itemLayout="horizontal"
-        dataSource={searchResults}
-        renderItem={entity => (
-          <List.Item>
-            <List.Item.Meta
-              title={<Link to={`/entity/${entity.id}`}>{entity.caption}</Link>}
-              description={
-                <>
-                  <p><strong>Schéma :</strong> {entity.schema || 'N/A'}</p>
-                  <p><strong>Referents :</strong> {entity.referents?.join(', ') || 'N/A'}</p>
-                  <p><strong>Datasets :</strong> {entity.datasets?.join(', ') || 'N/A'}</p>
-                </>
-              }
-            />
-          </List.Item>
-        )}
-      />
+      {searchResults.length > 0 && (
+        <List
+          style={{ marginTop: 20 }}
+          itemLayout="horizontal"
+          dataSource={searchResults}
+          renderItem={entity => <EntityListItem entity={entity} />}
+        />
+      )}
     </Card>
   );
 };
