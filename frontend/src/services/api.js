@@ -1,34 +1,50 @@
 // frontend/src/services/api.js
-
 import axios from 'axios';
 
-const API_BASE_URL = 'http://127.0.0.1:5000/api'; //  cette URL correspond à celle de votre backend
+const LOCAL_API_BASE_URL = 'http://127.0.0.1:5000/api';
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
+const localApi = axios.create({
+  baseURL: LOCAL_API_BASE_URL,
 });
 
-// Fonction pour récupérer une entité par son ID
+// Fonctions pour la source locale (inchangées)
 export const getLocalEntity = (id) => {
-  return api.get(`/local-entities/${id}`);
+  return localApi.get(`/local-entities/${id}`);
 };
 
-// Fonction pour rechercher des entités locales
 export const searchLocalEntities = (query) => {
-  return api.get(`/local-entities/search`, {
+  return localApi.get(`/local-entities/search`, {
     params: { q: query },
   });
 };
-/**
- * Récupère les entités en fonction du caption fourni.
- *
- * @param {string} caption - Le critère de recherche basé sur le caption de l'entité.
- * @returns {Promise} - Une promesse contenant la réponse de l'API.
- */
+
 export const getLocalEntitiesByCaption = (caption) => {
-  return api.get(`/local-entities/search`, {
-    params: { q: caption, // le paramètre correspond à celui attendu par votre backend
-    },
+  return localApi.get(`/local-entities/search`, {
+    params: { q: caption },
   });
 };
-// Vous pouvez ajouter d'autres fonctions pour interagir avec d'autres endpoints
+
+// Fonctions modifiées pour l'API OpenSanctions
+export const searchOpenSanctionsEntities = (query) => {
+  return localApi.get(`/entities/search`, {
+    params: { q: query }
+  });
+};
+
+// Modifié : Utilisation de l'endpoint correct pour obtenir une entité spécifique
+export const getOpenSanctionsEntity = (id) => {
+  return localApi.get(`/entities/${id}`);  // Changé ici pour utiliser l'endpoint dédié
+};
+
+// Fonctions unifiées (inchangées)
+export const getEntity = (id, dataSource) => {
+  return dataSource === 'local' ? getLocalEntity(id) : getOpenSanctionsEntity(id);
+};
+
+export const searchEntities = (query, dataSource) => {
+  return dataSource === 'local' ? searchLocalEntities(query) : searchOpenSanctionsEntities(query);
+};
+
+export const getEntitiesByCaption = (caption, dataSource) => {
+  return dataSource === 'local' ? getLocalEntitiesByCaption(caption) : searchOpenSanctionsEntities(caption);
+};

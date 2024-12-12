@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { List, Input, Button, Form, Spin, Alert, Card } from 'antd';
+import { List, Input, Button, Form, Spin, Card } from 'antd';
 import { SearchOutlined, FilePdfOutlined } from '@ant-design/icons';
-import { getLocalEntitiesByCaption } from '../services/api';
+import { getEntitiesByCaption } from '../services/api';
 import { translate } from '../utils/translations';
 import { getCountryLabel } from '../utils/countryMappings';
 import { getDataSourcesLabel } from '../utils/dataSourcesMappings';
@@ -10,7 +10,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import debounce from 'lodash/debounce';
 
-const EntitySearch = () => {
+const EntitySearch = ({ dataSource }) => {
   const [state, setState] = useState({
     searchCaption: '',
     searchResults: [],
@@ -18,7 +18,7 @@ const EntitySearch = () => {
     error: ''
   });
 
-  const { searchCaption, searchResults, loading, error } = state;
+  const { searchCaption, searchResults, loading} = state;
 
   const handleSearch = async () => {
     if (!searchCaption.trim()) {
@@ -28,15 +28,24 @@ const EntitySearch = () => {
       }));
       return;
     }
-
+  
     setState(prevState => ({
       ...prevState,
       loading: true,
       error: ''
     }));
-
+  
     try {
-      const response = await getLocalEntitiesByCaption(searchCaption);
+      // Construire l'URL pour la requête
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+      const endpoint = `${backendUrl}/api/entities/search?q=${searchCaption}`;
+      console.log("URL API appelée :", endpoint); // Log pour vérifier l'URL appelée
+  
+      // Envoyer la requête
+      const response = await getEntitiesByCaption(searchCaption, dataSource);
+      console.log("Statut de la réponse :", response?.status || 'Pas de statut'); // Vérifie le statut HTTP
+      console.log("Réponse complète :", response); // Log complet pour déboguer
+  
       if (response?.data?.results && Array.isArray(response.data.results)) {
         setState(prevState => ({
           ...prevState,
@@ -47,6 +56,7 @@ const EntitySearch = () => {
         throw new Error('Invalid response format');
       }
     } catch (err) {
+      console.error("Erreur lors de l'appel API :", err.message || err); // Log des erreurs
       setState(prevState => ({
         ...prevState,
         error: err.message === 'Invalid response format' 
@@ -57,6 +67,8 @@ const EntitySearch = () => {
       }));
     }
   };
+  
+
 
   const debouncedHandleInputChange = debounce((value) => {
     setState(prevState => ({ ...prevState, searchCaption: value }));
@@ -175,14 +187,12 @@ const EntitySearch = () => {
         </Form.Item>
       </Form>
 
-      {loading && <Spin tip={translate('Loading...')} style={{ marginTop: 20 }} />}
-      {error && (
-        <Alert 
-          message={error} 
-          type="error" 
-          showIcon 
-          style={{ marginTop: 20 }} 
-        />
+      {loading && (
+        <div style={{ textAlign: 'center', margin: '20px 0' }}>
+          <Spin tip={translate('Loading...')} size="large">
+            <div className="content" style={{ padding: '50px' }} />
+          </Spin>
+         </div>
       )}
 
       {searchResults.length > 0 && (

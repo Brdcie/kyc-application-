@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Input, Button, Form, Spin, Alert, Card, List } from 'antd';
 import { SearchOutlined, FilePdfOutlined } from '@ant-design/icons';
-import { getLocalEntity } from '../services/api';
+import { getEntity } from '../services/api';
 import { translate } from '../utils/translations';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -38,7 +38,7 @@ const getCountryCode = (entity) => {
   
   return null;
 };
-const EntityDetails = () => {
+const EntityDetails = ({ dataSource }) => {
   const { id } = useParams();
   const [entityId, setEntityId] = useState(id || '');
   const [entity, setEntity] = useState(null);
@@ -55,7 +55,7 @@ const EntityDetails = () => {
     setRiskComments('');
 
     try {
-      const response = await getLocalEntity(entityId);
+     const response = await getEntity(entityId, dataSource);
       setEntity(response.data);
     } catch (err) {
       console.error('Error fetching entity:', err);
@@ -67,7 +67,7 @@ const EntityDetails = () => {
     } finally {
       setLoading(false);
     }
-  }, [entityId]);
+  }, [entityId, dataSource]);
 
   useEffect(() => {
     if (id) {

@@ -4,7 +4,6 @@ import { Layout, Menu, Typography, ConfigProvider } from 'antd';
 import { SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import EntitySearch from './components/EntitySearch';
 import EntityDetails from './components/EntityDetails';
-//import EntityPage from './components/EntityPage';
 import { APP_VERSION, APP_NAME } from './config';
 
 const { Header, Content, Footer } = Layout;
@@ -12,8 +11,7 @@ const { Title, Text } = Typography;
 
 const App = () => {
   const location = useLocation();
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchCaption, setSearchCaption] = useState('');
+  const [dataSource, setDataSource] = useState('local');
 
   const selectedKey = () => {
     if (location.pathname === '/' || location.pathname.startsWith('/search')) return 'search';
@@ -61,21 +59,32 @@ const App = () => {
                 <Link to="/details">Recherche par Identifiant</Link>
               </Menu.Item>
             </Menu>
+            <div style={{ marginLeft: 'auto', marginRight: '20px' }}>
+              <select 
+                value={dataSource}
+                onChange={(e) => setDataSource(e.target.value)}
+                style={{ 
+                  background: 'white', 
+                  padding: '5px',
+                  borderRadius: '4px' 
+                }}
+              >
+              <option value="local">Base locale</option>
+              <option value="api">OpenSanctions API</option>
+          </select>
+        </div>
           </div>
         </Header>
         <Content style={{ padding: '20px 50px' }}>
-          <Routes>
-            <Route path="/" element={
-              <EntitySearch 
-                setSearchResults={setSearchResults}
-                searchResults={searchResults}
-                searchCaption={searchCaption}
-                setSearchCaption={setSearchCaption}
-              />
-            } />
-            <Route path="/details" element={<EntityDetails />} />
-            <Route path="/details/:id" element={<EntityDetails />} />
-          </Routes>
+        <Routes>
+          <Route path="/" element={
+            <EntitySearch 
+              dataSource={dataSource}
+           />
+         } />
+        <Route path="/details" element={<EntityDetails dataSource={dataSource} />} />
+         <Route path="/details/:id" element={<EntityDetails dataSource={dataSource} />} />
+</Routes>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
           <div>{APP_NAME} ©2024 by EvoLogica</div>
