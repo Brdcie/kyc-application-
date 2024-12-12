@@ -1,11 +1,21 @@
 // controllers/entityController.js
+require('dotenv').config();
+const axios =require ('axios');
 const fs = require('fs');
 const path = require('path');
-const readline = require ('readline');
-
-// Chemin vers le fichier JSON
+const readline = require ('readline')
 const Entity = require('../models/Entity');
 const openSanctionsService = require('../services/openSanctionsService');
+
+// Configuration du client API OpenSanctions
+const apiClient = axios.create({
+  baseURL: 'https://api.opensanctions.org',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Apikey ${process.env.OPENSANCTIONS_API_KEY}`
+  },
+});
+
 exports.createEntity = async (req, res) => {
   console.log('createEntity appelé avec les données :', req.body);
 
@@ -37,7 +47,7 @@ exports.createEntity = async (req, res) => {
 };
 exports.searchEntity = async (req, res) => {
   const query = req.query.q;
-
+  
   if (!query) {
     return res.status(400).json({
       message: "Paramètre de requête 'q' manquant",
@@ -45,17 +55,55 @@ exports.searchEntity = async (req, res) => {
   }
 
   try {
-    const searchResults = await openSanctionsService.searchEntities(query);
-    res.status(200).json({
-      query: query,
-      results: searchResults,
+    //console.log(`Requête en cours pour : ${query}`);
+    const response = await apiClient.get(`/search/default`, {
+      params: { q: query }
     });
+    
+    // Envoi de la réponse au client avec res.json()
+    res.status(200).json(response.data);
+    
   } catch (error) {
-    console.error('Erreur lors de la recherche de l\'entité:', error);
-    res.status(500).json({
-      message: 'Erreur lors de la recherche de l\'entité',
-      error: error.message,
+    console.error('Erreur lors de la requête API :', error.response?.data || error.message);
+    res.status(500).json({ 
+      message: "Erreur API OpenSanctions", 
+      error: error.response?.data || error.message 
     });
+  }
+};
+exports.getOpenSanctionsEntity = async (req, res) => {
+  const entityId = req.params.id;
+  
+  if (!entityId) {
+    return res.status(400).json({
+      message: "ID d'entité manquant"
+    });
+  }
+
+  try {
+    console.log(`Récupération de l'entité OpenSanctions avec l'ID : ${entityId}`);
+    const response = await apiClient.get(`/entities/${entityId}/`, {
+      headers: {
+        'Authorization': `ApiKey ${process.env.OPENSANCTIONS_API_KEY}` // Correction de la clé d'API
+      }
+    });
+    
+    res.status(200).json(response.data);
+    
+  } catch (error) {
+    console.error('Erreur lors de la requête API OpenSanctions:', error.response?.data || error.message);
+    
+    if (error.response?.status === 404) {
+      res.status(404).json({ 
+        message: "Entité non trouvée",
+        error: error.response.data 
+      });
+    } else {
+      res.status(500).json({ 
+        message: "Erreur API OpenSanctions", 
+        error: error.response?.data || error.message 
+      });
+    }
   }
 };
 exports.getLocalEntity = (req, res) => {

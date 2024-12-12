@@ -1,6 +1,7 @@
 // services/openSanctionsService.js
 
 const axios = require('axios');
+require('dotenv').config();
 
 const apiClient = axios.create({
   baseURL: 'https://api.opensanctions.org',
@@ -9,8 +10,6 @@ const apiClient = axios.create({
     'Authorization': `Apikey ${process.env.OPENSANCTIONS_API_KEY}`
   }
 });
-
-// Le reste de votre code...
 /**
  * Recherche des entités dans OpenSanctions en fonction d'un terme de recherche.
  * @param {string} query - Le terme de recherche (nom de l'entité).
