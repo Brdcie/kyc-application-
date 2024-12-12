@@ -23,6 +23,8 @@ frontend/node_modules/
 # Fichiers environnement
 backend/.env
 frontend/.env
+backend/controllers/testOpenSanctions.js
+backend/controllers/testConnection.js
 
 
 npm-debug.log*
