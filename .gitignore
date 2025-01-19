@@ -39,4 +39,4 @@ yarn-error.log*
 # Exclure le répertoire data dans backend
 backend/data/
 # Test output
-test_output.json
+frontend/src/components/TestUBODetails.js
