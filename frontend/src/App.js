@@ -15,6 +15,7 @@ const App = () => {
 
   const selectedKey = () => {
     if (location.pathname === '/' || location.pathname.startsWith('/search')) return 'search';
+    if (location.pathname === '/test-ubo') return 'test-ubo';
     return 'details';
   };
 
@@ -82,8 +83,9 @@ const App = () => {
               dataSource={dataSource}
            />
          } />
+        <Route path="/" element={<EntitySearch dataSource={dataSource} />} />
         <Route path="/details" element={<EntityDetails dataSource={dataSource} />} />
-         <Route path="/details/:id" element={<EntityDetails dataSource={dataSource} />} />
+         <Route path="/details/:id" element={<EntityDetails dataSource={dataSource} />}/>
 </Routes>
         </Content>
         <Footer style={{ textAlign: 'center' }}>

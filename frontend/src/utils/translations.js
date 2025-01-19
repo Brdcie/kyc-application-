@@ -11,6 +11,10 @@ export const fieldTranslations = {
   'last_change': 'Dernière modification',
   'target': 'Cible',
   'Generate PDF': 'Générer le PDF',
+  'sourceUrl' : 'URL des sources',
+  'legalForm' : 'Forme juridique',
+  'permId' : 'numéro de permis',
+  'taxNumber': 'identifiant fiscal',
   // Propriétés communes
   'properties': 'Propriétés',
   'name': 'Nom',
@@ -28,6 +32,7 @@ export const fieldTranslations = {
   'lastName': 'Nom de famille',
   'swiftBic': 'Code SWIFT/BIC',
   'createdAt': 'Date de création',
+  'startDate': 'Date de début',
 
   // Types d'entités
   'Person': 'Personne',
