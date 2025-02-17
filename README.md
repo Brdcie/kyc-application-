@@ -26,7 +26,7 @@ Application KYC (Know Your Customer) permettant la gestion et la recherche d'ent
 
 ## Introduction
 
-L'application KYC est conçue pour faciliter la gestion des entités clients en permettant une recherche par critères et un affichage dynamique de leurs propriétés. Elle se compose de deux parties principales :
+L'application KYC est conçue pour faciliter la gestion des entités clients en permettant une recherche par nom  et un affichage dynamique de leurs propriétés. Elle se compose de deux parties principales :
 
 - **Frontend** : Développé avec React et Ant Design, offrant une interface utilisateur réactive et intuitive.
 - **Backend** : Développé avec Node.js et Express, fournissant des API robustes pour la gestion des données.
@@ -143,14 +143,14 @@ Le projet est structuré en deux dossiers principaux : `frontend` et `backend`
 
 ## Guide d'Utilisation
 
-### Recherche par Critères
+### Recherche par Nom
 
 1. Accédez à la page de recherche via le frontend.
-2. Entrez un nom ou un critère de recherche dans le champ de saisie.
+2. Entrez un nom ou partie du nom dans le champ de saisie.
 3. Cliquez sur le bouton "Rechercher".
 4. Les résultats s'affichent avec les propriétés et le type d’entité.
 5. On peut sauvegarder les résultats de la recherche dans un pdf.
-6. En cliquant sur le caption, on arrive sur l'onglet recherche par Id et de là, on peut visualiser tout le détail et l'imprimer dans un pdf.
+6. En cliquant sur le caption, on arrive sur l'onglet recherche par Id et de là, on peut visualiser tout le détail et l'imprimer dans un pdf ou Excel.
 
 ### Détails d'une Entité
 

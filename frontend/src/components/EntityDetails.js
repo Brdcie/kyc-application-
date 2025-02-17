@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Input, Button, Form, Spin, Alert, Card, List,Select } from 'antd';
-import { SearchOutlined,DownloadOutlined } from '@ant-design/icons';
+import { Input, Button, Form, Spin, Alert, Card, List, Select } from 'antd';
+import { SearchOutlined, DownloadOutlined } from '@ant-design/icons';
 import { getEntity } from '../services/api';
 import { translate } from '../utils/translations';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { getCountryLabel } from '../utils/countryMappings';
 import { getDataSourcesLabel } from '../utils/dataSourcesMappings';
-import RiskAssessment, { calculateRiskScore, assessRisk } from './RiskAssessment';
+import RiskAssessment from './RiskAssessment';
+import { riskAssessmentService } from '../services/riskAssessmentService';
 import UBODetails from './UBODetails';
 import { cleanCyrillicText } from '../utils/textFormatting';
 import * as XLSX from 'xlsx';
-
 
 const { Item } = Form;
 const { Option } = Select;
@@ -42,6 +42,7 @@ const getCountryCode = (entity) => {
   
   return null;
 };
+
 const formatComplexValue = (value) => {
   if (typeof value === 'object' && value !== null) {
     if (Array.isArray(value)) {
@@ -54,6 +55,7 @@ const formatComplexValue = (value) => {
   }
   return value?.toString() || 'N/A';
 };
+
 const formatAddressForPDF = (address) => {
   if (!address) return 'N/A';
   
@@ -67,6 +69,7 @@ const formatAddressForPDF = (address) => {
   
   return address.toString();
 };
+
 const EntityDetails = ({ dataSource }) => {
   const { id } = useParams();
   const [entityId, setEntityId] = useState(id || '');
@@ -84,7 +87,7 @@ const EntityDetails = ({ dataSource }) => {
     setRiskComments('');
 
     try {
-     const response = await getEntity(entityId, dataSource);
+      const response = await getEntity(entityId, dataSource);
       setEntity(response.data);
     } catch (err) {
       console.error('Error fetching entity:', err);
@@ -108,8 +111,6 @@ const EntityDetails = ({ dataSource }) => {
   const handleInputChange = (e) => {
     setEntityId(e.target.value);
   };
-  
-  // Cette fonction peut être ajoutée juste avant generatePDF
   const generateUBOSection = (doc, uboDetails, yPos) => {
     // Titre
     doc.setFillColor(22, 160, 133);
@@ -193,25 +194,24 @@ const EntityDetails = ({ dataSource }) => {
   
     return currentY;
   };
-
   const generatePDF = () => {
     if (!entity) return;
     
-// Créer le document en format paysage
-const doc = new jsPDF({
-  orientation: 'landscape',
-  unit: 'mm',
-  format: 'a4'
-});    
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
+
     const addHeader = (pageNumber) => {
       doc.setFontSize(10);
       doc.setTextColor(100);
       doc.text(`${translate('Entity')}: ${entity.caption} (${translate('id')}: ${entity.id})`, 20, 10);
       doc.text(`${translate('Generation Date')}: ${new Date().toLocaleString('fr-FR')}`, 20, 15);
-      doc.text(`${translate('Page')} ${pageNumber}`, 280, 15, { align: 'right' }); // Ajusté pour le format paysage
+      doc.text(`${translate('Page')} ${pageNumber}`, 280, 15, { align: 'right' });
       doc.setTextColor(0);
     };
-    
+
     // Première page
     addHeader(1);
     
@@ -278,85 +278,76 @@ const doc = new jsPDF({
       headStyles: { fillColor: [22, 160, 133] },
     });
 
-  
-// Second page - Risk Assessment
-doc.addPage();
-addHeader(2);
+    // Second page - List Membership
+    doc.addPage();
+    addHeader(2);
 
-// Title background
-doc.setFillColor(22, 160, 133);
-doc.rect(0, 20, 297, 20, 'F');
-doc.setTextColor(255, 255, 255);
-doc.setFontSize(18);
-doc.text(translate('Risk Assessment'), 105, 35, { align: 'center' });
-
-doc.setTextColor(0, 0, 0);
-doc.setFontSize(12);
-
-// Create content box
-doc.setDrawColor(22, 160, 133);
-doc.setLineWidth(0.5);
-doc.rect(10, 45, 190, 100);
-
-// Add content with proper spacing
-const countryCode = getCountryCode(entity);
-const countryName = getCountryLabel(countryCode);
-const score = calculateRiskScore(countryCode, entity.properties || {});
-const riskLevel = assessRisk(score);
-
-let yPos = 60;
-const lineHeight = 20;
-
-// Country
-doc.text(`${translate('country')}: ${countryName}`, 20, yPos);
-yPos += lineHeight;
-
-// Risk Level with color
-doc.text(`${translate('Risk Level')}: `, 20, yPos);
-const riskColor = riskLevel === translate('High Risk') ? '#FF0000' : 
-                 riskLevel === translate('Medium Risk') ? '#FFA500' : 
-                 '#008000';
-doc.setTextColor(riskColor);
-doc.text(translate(riskLevel), 70, yPos);
-doc.setTextColor(0, 0, 0);
-yPos += lineHeight;
-
-// Risk Score
-doc.text(`${translate('Risk Score')}: ${score}`, 20, yPos);
-yPos += lineHeight;
-
-// Topics
-doc.text(`${translate('topics')}:`, 20, yPos);
-const topics = entity.properties?.topics?.map(t => translate(t)).join(', ') || translate('None');
-doc.setFontSize(10);
-const splitTopics = doc.splitTextToSize(topics, 160);
-doc.text(splitTopics, 20, yPos + 10);
-yPos += lineHeight + (splitTopics.length * 5);
-
-// Dans votre section UBO existante, remplacez le code par :
-// Section UBO
-if (entity.uboDetails) {
-  doc.addPage();
-  addHeader(3);
-  
-  const finalY = generateUBOSection(doc, entity.uboDetails, 50);
-  
-  // Ajout des commentaires si nécessaire
-  if (riskComments) {
+    // Title background
+    doc.setFillColor(22, 160, 133);
+    doc.rect(0, 20, 297, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.text(translate('List Membership'), 105, 35, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
-    doc.text(`${translate('Comments')}:`, 20, finalY + 10);
-    const splitComments = doc.splitTextToSize(riskComments, 250);
-    doc.setFontSize(10);
-    doc.text(splitComments, 20, finalY + 20);
-  }
-}
 
-// Save the PDF
-const sanitizedCaption = entity.caption.replace(/[^a-zA-Z0-9]/g, '_') || 'entity';
-doc.save(`kyc_${sanitizedCaption}.pdf`);
+    // Create content box
+    doc.setDrawColor(22, 160, 133);
+    doc.setLineWidth(0.5);
+    doc.rect(10, 45, 190, 100);
+
+    // Add content with proper spacing
+    const countryCode = getCountryCode(entity);
+    const countryName = getCountryLabel(countryCode);
+    const listMembership = riskAssessmentService.checkListMembership(countryName);
+
+
+    let yPos = 60;
+    const lineHeight = 20;
+
+    // Country
+    doc.text(`${translate('country')}: ${countryName}`, 20, yPos);
+    yPos += lineHeight;
+
+    // List Membership
+    doc.text(`${translate('GAFI Black List')}: ${listMembership.gafiBlack ? translate('Yes') : translate('No')}`, 20, yPos);
+    yPos += lineHeight;
+    doc.text(`${translate('GAFI Grey List')}: ${listMembership.gafiGrey ? translate('Yes') : translate('No')}`, 20, yPos);
+    yPos += lineHeight;
+    doc.text(`${translate('Sanctions List')}: ${listMembership.sanctions ? translate('Yes') : translate('No')}`, 20, yPos);
+    yPos += lineHeight;
+
+    // Topics
+    doc.text(`${translate('topics')}:`, 20, yPos);
+    const topics = entity.properties?.topics?.map(t => translate(t)).join(', ') || translate('None');
+    doc.setFontSize(10);
+    const splitTopics = doc.splitTextToSize(topics, 160);
+    doc.text(splitTopics, 20, yPos + 10);
+    yPos += lineHeight + (splitTopics.length * 5);
+
+    // Section UBO
+    if (entity.uboDetails) {
+      doc.addPage();
+      addHeader(3);
+      
+      const finalY = generateUBOSection(doc, entity.uboDetails, 50);
+      
+      // Ajout des commentaires si nécessaire
+      if (riskComments) {
+        doc.setFontSize(12);
+        doc.text(`${translate('Comments')}:`, 20, finalY + 10);
+        const splitComments = doc.splitTextToSize(riskComments, 250);
+        doc.setFontSize(10);
+        doc.text(splitComments, 20, finalY + 20);
+      }
+    }
+
+    // Save the PDF
+    const sanitizedCaption = entity.caption.replace(/[^a-zA-Z0-9]/g, '_') || 'entity';
+    doc.save(`kyc_${sanitizedCaption}.pdf`);
   };
+
   const generateXLSX = (entity) => {
-    // Création d'un nouveau workbook
     const wb = XLSX.utils.book_new();
   
     // Feuille 1: Informations générales de l'entité
@@ -403,19 +394,20 @@ doc.save(`kyc_${sanitizedCaption}.pdf`);
       XLSX.utils.book_append_sheet(wb, wsUBO, "Structure de Propriété");
     }
   
-    // Feuille 4: Évaluation des risques
-    const riskData = [
+    // Feuille 4: Évaluation des listes
+    const listData = [
       ['Pays', entity.properties?.country || 'N/A'],
-      ['Score de risque', calculateRiskScore(entity.properties?.country, entity.properties)],
-      ['Niveau de risque', assessRisk(calculateRiskScore(entity.properties?.country, entity.properties))],
+      ['GAFI Black List', riskAssessmentService.checkListMembership(getCountryLabel(entity.properties?.country)).gafiBlack ? 'Oui' : 'Non'],
+      ['GAFI Grey List', riskAssessmentService.checkListMembership(getCountryLabel(entity.properties?.country)).gafiGrey ? 'Oui' : 'Non'],
+      ['Sanctions List', riskAssessmentService.checkListMembership(getCountryLabel(entity.properties?.country)).sanctions ? 'Oui' : 'Non'],
       ['', ''],
       ['Catégories', ''],
       ...Object.entries(entity.properties || {})
         .filter(([key, value]) => key === 'topics' && Array.isArray(value))
         .flatMap(([_, values]) => values.map(v => ['', v]))
     ];
-    const wsRisk = XLSX.utils.aoa_to_sheet(riskData);
-    XLSX.utils.book_append_sheet(wb, wsRisk, "Évaluation des Risques");
+    const wsList = XLSX.utils.aoa_to_sheet(listData);
+    XLSX.utils.book_append_sheet(wb, wsList, "Évaluation des Listes");
   
     // Génération du fichier
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
@@ -427,6 +419,7 @@ doc.save(`kyc_${sanitizedCaption}.pdf`);
     
     return new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   };
+
   const ExportButton = ({ entity }) => {
     const [exportFormat, setExportFormat] = useState('pdf');
   
@@ -466,10 +459,10 @@ doc.save(`kyc_${sanitizedCaption}.pdf`);
       </div>
     );
   };
+
   const handleRiskCommentChange = (comments) => {
     setRiskComments(comments);
   };
-
 
   return (
     <Card title={translate('Search Entity by ID')} style={{ maxWidth: 800, margin: 'auto' }}>

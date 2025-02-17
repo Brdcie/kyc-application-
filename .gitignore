@@ -40,3 +40,4 @@ yarn-error.log*
 backend/data/
 # Test output
 frontend/src/components/TestUBODetails.js
+KYC-tool documentation

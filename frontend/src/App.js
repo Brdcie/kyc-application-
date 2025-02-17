@@ -15,7 +15,6 @@ const App = () => {
 
   const selectedKey = () => {
     if (location.pathname === '/' || location.pathname.startsWith('/search')) return 'search';
-    if (location.pathname === '/test-ubo') return 'test-ubo';
     return 'details';
   };
 
@@ -89,7 +88,7 @@ const App = () => {
 </Routes>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
-          <div>{APP_NAME} ©2024 by EvoLogica</div>
+          <div>{APP_NAME} ©2025 by EvoLogica</div>
           <Text type="secondary">Version {APP_VERSION}</Text>
         </Footer>
       </Layout>
